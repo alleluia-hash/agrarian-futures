@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "agrarianfutures:block/ticker_board" }
+  }
+}

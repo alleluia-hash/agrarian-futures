@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "RER",
+    "PPP"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone" },
+    "E": { "item": "minecraft:emerald" },
+    "P": { "tag": "minecraft:planks" }
+  },
+  "result": {
+    "item": "agrarianfutures:ticker_board",
+    "count": 1
+  }
+}

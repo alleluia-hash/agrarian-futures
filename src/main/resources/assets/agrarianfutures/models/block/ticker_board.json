@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "agrarianfutures:block/ticker_board",
+    "down": "minecraft:block/oak_planks",
+    "up": "minecraft:block/oak_planks",
+    "north": "agrarianfutures:block/ticker_board",
+    "south": "agrarianfutures:block/ticker_board",
+    "east": "agrarianfutures:block/ticker_board",
+    "west": "agrarianfutures:block/ticker_board"
+  }
+}
