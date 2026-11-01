@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,3 +26,12 @@ jobs:
           path: |
             build/libs/*.jar
             !build/libs/*-sources.jar
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          JAR=$(ls build/libs/*.jar | grep -v sources | head -n 1)
+          gh release create "$GITHUB_REF_NAME" "$JAR" \
+            --title "Agrarian Futures $GITHUB_REF_NAME" \
+            --notes "Fabric 1.20.1 mod. Needs Fabric API 0.92.x. Craft a Ticker Board, sell farm goods for emeralds, and watch prices change every 3 days. Flood one market (1728 items) and it crashes to zero for 7 days. See the README for details."
