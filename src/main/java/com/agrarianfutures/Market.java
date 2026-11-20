@@ -54,8 +54,8 @@ public final class Market {
     }
 
     /** This period's price multiplier for a commodity, the same for everyone in the world. */
-    public static double mult(ServerWorld w, long epoch, int idx) {
-        long h = overworld(w).getSeed() ^ (epoch * 0x9E3779B97F4A7C15L) ^ ((idx + 1) * 0xC2B2AE3D27D4EB4FL);
+    public static double mult(long seed, long epoch, int idx) {
+        long h = seed ^ (epoch * 0x9E3779B97F4A7C15L) ^ ((idx + 1) * 0xC2B2AE3D27D4EB4FL);
         h ^= h >>> 33;
         h *= 0xFF51AFD7ED558CCDL;
         h ^= h >>> 33;
@@ -65,18 +65,17 @@ public final class Market {
         return MIN_MULT + (MAX_MULT - MIN_MULT) * u;
     }
 
-    public static boolean isCrashed(ServerWorld w, MarketState st, Commodity c) {
-        return overworld(w).getTimeOfDay() < st.crashUntil[c.ordinal()];
+    public static boolean isCrashed(long time, MarketState st, Commodity c) {
+        return time < st.crashUntil[c.ordinal()];
     }
 
     /** Price for one item right now, including the drop caused by what has already been sold. */
-    public static double unitPrice(ServerWorld w, MarketState st, Commodity c) {
-        if (isCrashed(w, st, c)) {
+    public static double unitPrice(long seed, long epoch, long time, MarketState st, Commodity c) {
+        if (isCrashed(time, st, c)) {
             return 0.0;
         }
         int i = c.ordinal();
-        long t = overworld(w).getTimeOfDay();
-        return c.base * mult(w, epoch(t), i) * (1.0 - 0.5 * st.sold[i] / GLUT);
+        return c.base * mult(seed, epoch, i) * (1.0 - 0.5 * st.sold[i] / GLUT);
     }
 
     /**
@@ -87,7 +86,7 @@ public final class Market {
         ServerWorld ow = overworld(w);
         int i = c.ordinal();
         long t = ow.getTimeOfDay();
-        if (t < st.crashUntil[i]) {
+        if (isCrashed(t, st, c)) {
             return new Result(0, 0.0, false);
         }
         int room = GLUT - st.sold[i];
@@ -95,7 +94,7 @@ public final class Market {
         if (k <= 0) {
             return new Result(0, 0.0, false);
         }
-        double p = c.base * mult(w, epoch(t), i);
+        double p = c.base * mult(ow.getSeed(), epoch(t), i);
         double s = st.sold[i];
         double value = p * (k - 0.5 * (k * s + k * (k - 1) / 2.0) / GLUT);
         st.sold[i] += k;
@@ -112,12 +111,12 @@ public final class Market {
         return String.format(Locale.ROOT, "%.2f", v);
     }
 
-    /** The lines shown when a player checks the board. */
-    public static List<Text> board(ServerWorld w) {
+    /** The lines shown when a player checks the board. Takes the state the caller already holds. */
+    public static List<Text> board(ServerWorld w, MarketState st) {
         ServerWorld ow = overworld(w);
-        MarketState st = state(w);
         long t = ow.getTimeOfDay();
         long ep = epoch(t);
+        long seed = ow.getSeed();
         List<Text> out = new ArrayList<>();
         double daysLeft = ((ep + 1) * PERIOD - t) / (double) DAY;
         out.add(Text.literal("== Ticker Board ==").formatted(Formatting.GOLD, Formatting.BOLD));
@@ -126,14 +125,14 @@ public final class Market {
         for (Commodity c : Commodity.values()) {
             int i = c.ordinal();
             MutableText line = c.item.getName().copy().formatted(Formatting.WHITE);
-            if (t < st.crashUntil[i]) {
+            if (isCrashed(t, st, c)) {
                 double d = (st.crashUntil[i] - t) / (double) DAY;
                 line.append(Text.literal(String.format(Locale.ROOT, "  CRASHED, no buyers for %.1f more days", d))
                         .formatted(Formatting.RED));
             } else {
-                double m = mult(w, ep, i);
+                double m = mult(seed, ep, i);
                 long pct = Math.round((m - 1.0) * 100.0);
-                line.append(Text.literal("  " + fmt(unitPrice(w, st, c)) + " ").formatted(Formatting.YELLOW));
+                line.append(Text.literal("  " + fmt(unitPrice(seed, ep, t, st, c)) + " ").formatted(Formatting.YELLOW));
                 if (m >= 1.05) {
                     line.append(Text.literal("▲ +" + pct + "%").formatted(Formatting.GREEN));
                 } else if (m <= 0.95) {

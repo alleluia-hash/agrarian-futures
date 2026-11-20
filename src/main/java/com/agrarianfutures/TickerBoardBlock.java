@@ -91,7 +91,7 @@ public class TickerBoardBlock extends Block {
             }
             finish(sw, sp, st, sale, pos, "No buyers for that right now.");
         } else {
-            for (Text line : Market.board(sw)) {
+            for (Text line : Market.board(sw, st)) {
                 sp.sendMessage(line, false);
             }
         }

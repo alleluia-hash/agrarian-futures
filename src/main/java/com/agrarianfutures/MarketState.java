@@ -86,7 +86,14 @@ public class MarketState extends PersistentState {
     public int addCredit(UUID player, double amount) {
         double total = credit.getOrDefault(player, 0.0) + amount;
         int whole = (int) Math.floor(total);
-        credit.put(player, total - whole);
+        double carry = total - whole;
+        // Keep the map to players who still have a fraction waiting, instead of one entry per
+        // player who ever sold anything.
+        if (carry > 0.0) {
+            credit.put(player, carry);
+        } else {
+            credit.remove(player);
+        }
         markDirty();
         return whole;
     }
