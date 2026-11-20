@@ -4,7 +4,7 @@
   "version": "${version}",
   "name": "Agrarian Futures",
   "description": "A fluctuating crop market. Sell farm goods at the Ticker Board, but flood one market and its price collapses to zero for a week.",
-  "authors": ["You"],
+  "authors": ["alleluia-hash"],
   "license": "MIT",
   "icon": "assets/agrarianfutures/icon.png",
   "environment": "*",
