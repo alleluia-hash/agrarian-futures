@@ -30,8 +30,15 @@ jobs:
           gradle-version: '8.8'
           cache-provider: basic
 
+      # Maven Central throttles shared runners with HTTP 429, which is transient.
       - name: Build the mod
-        run: gradle build --no-daemon
+        run: |
+          for attempt in 1 2 3; do
+            if gradle build --no-daemon; then exit 0; fi
+            echo "Build attempt $attempt failed, retrying in 30s..." >&2
+            sleep 30
+          done
+          exit 1
 
       - name: Upload jar
         uses: actions/upload-artifact@v6
