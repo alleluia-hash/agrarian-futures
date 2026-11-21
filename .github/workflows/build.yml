@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -25,15 +25,16 @@ jobs:
       # Provisioned rather than relying on a committed ./gradlew.
       # Quote the version: unquoted 8.8 is a YAML float.
       - name: Set up Gradle 8.8
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.8'
+          cache-provider: basic
 
       - name: Build the mod
         run: gradle build --no-daemon
 
       - name: Upload jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: agrarian-futures
           path: |
