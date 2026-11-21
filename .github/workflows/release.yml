@@ -22,15 +22,17 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # Provisioned rather than relying on a committed ./gradlew.
+      # Quote the version: unquoted 8.8 is a YAML float.
       - name: Set up Gradle 8.8
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.8
+          gradle-version: '8.8'
 
       - name: Check the tag matches mod_version
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           TAG="${GITHUB_REF_NAME#v}"
           if [ "$VERSION" != "$TAG" ]; then
             echo "Tag $GITHUB_REF_NAME does not match mod_version=$VERSION." >&2
@@ -45,7 +47,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           TAG="v$VERSION"
           JAR=$(ls build/libs/*.jar | grep -v sources | head -n 1)
           gh release create "$TAG" "$JAR" \

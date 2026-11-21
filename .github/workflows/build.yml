@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
   workflow_dispatch:
 
@@ -22,10 +22,12 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # Provisioned rather than relying on a committed ./gradlew.
+      # Quote the version: unquoted 8.8 is a YAML float.
       - name: Set up Gradle 8.8
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.8
+          gradle-version: '8.8'
 
       - name: Build the mod
         run: gradle build --no-daemon
